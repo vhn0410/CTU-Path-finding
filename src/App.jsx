@@ -3,14 +3,17 @@ import reactLogo from './assets/react.svg'
 import viteLogo from '/vite.svg'
 import './App.css'
 import PathfindingVisualizer4 from './PathFindingVisualizerv4'
-
+import { Provider } from 'react-redux';
+import { store } from './store/store';
 
 function App() {
   const [count, setCount] = useState(0)
 
-  // return <PathfindingVisualizer />
-  // return <PathfindingVisualizerv2 />
-  return <PathfindingVisualizer4 />
+  return(
+    <Provider store={store}>
+      <PathfindingVisualizer4 />
+    </Provider>
+  )
 }
 
 export default App
