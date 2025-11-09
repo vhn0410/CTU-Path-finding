@@ -123,7 +123,8 @@ export function UCS(graph, nodes, edges, startNodeId, endNodeId) {
         
         // Trace back path
         while (current.nodeId !== parseInt(startNodeId)) {
-            const node = nodes.find(n => n.Index === current.nodeId);
+            // const node = nodes.find(n => n.Index === current.nodeId);
+            const node = nodes[current.nodeId]
             if (node) {
                 path.unshift({
                     id: current.nodeId.toString(),
@@ -147,7 +148,8 @@ export function UCS(graph, nodes, edges, startNodeId, endNodeId) {
         }
         
         // ✅ Thêm start node vào path
-        const startNodeData = nodes.find(n => n.Index === parseInt(startNodeId));
+        // const startNodeData = nodes.find(n => n.Index === parseInt(startNodeId));
+        const startNodeData = nodes[parseInt(startNodeId)]
         if (startNodeData) {
             path.unshift({
                 id: startNodeId.toString(),

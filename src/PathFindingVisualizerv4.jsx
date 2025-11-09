@@ -11,11 +11,14 @@ import {
   setUploadedFiles,
   resetNodes,
   resetEdges,
-  resetAll
+  resetAll,
+  resetPathResult
 } from './store/graphSlice';
 
 import { UCS } from './algorithms/ucs';
 import { MyTable } from './components/MyTable';
+import { Greedy } from './algorithms/greedy';
+import { Astar } from './algorithms/Astar';
 
 const PathfindingVisualizer4 = () => {
   const dispatch = useDispatch();
@@ -174,10 +177,12 @@ const PathfindingVisualizer4 = () => {
     vectorSource.clear();
 
     // Draw edges
+    // console.log(edges)
     edges.forEach(edge => {
-      const node1 = nodes.find(n => n.Index === edge.Node1);
-      const node2 = nodes.find(n => n.Index === edge.Node2);
-
+      // const node1 = nodes.find(n => n.Index === edge.Node1);
+      // const node2 = nodes.find(n => n.Index === edge.Node2);
+      const node1 = nodes[edge.Node1]
+      const node2 = nodes[edge.Node2]
       if (node1 && node2) {
         const line = new ol.geom.LineString([
           [node1.Longitude, node1.Latitude],
@@ -201,7 +206,7 @@ const PathfindingVisualizer4 = () => {
       }
     });
 
-        const shouldDrawFinalPath = pathResult && pathResult.paths.length > 1 && (
+    const shouldDrawFinalPath = pathResult && pathResult.paths.length > 1 && (
       !isTracingMode || 
       (isTracingMode && pathResult.traceExecution[currentTraceStep]?.isGoal)
     );
@@ -250,13 +255,15 @@ const PathfindingVisualizer4 = () => {
       for (let stepIndex = 0; stepIndex <= currentTraceStep; stepIndex++) {
         const stepData = pathResult.traceExecution[stepIndex];
         const visitNodeId = stepData.visitNode;
-        const visitNodeData = nodes.find(n => n.Index === visitNodeId);
+        // const visitNodeData = nodes.find(n => n.Index === visitNodeId);
+        const visitNodeData = nodes[visitNodeId];
         
         if (visitNodeData && stepData.openList) {
           stepData.openList.forEach(item => {
             const targetNodeId = item.element.nodeId;
             const parentNodeId = item.element.parent;
-            const targetNodeData = nodes.find(n => n.Index === targetNodeId);
+            // const targetNodeData = nodes.find(n => n.Index === targetNodeId);
+            const targetNodeData = nodes[targetNodeId];
             
             // Chỉ vẽ đường nếu parent của target node là visit node hiện tại
             if (targetNodeData && parentNodeId === visitNodeId) {
@@ -293,8 +300,8 @@ const PathfindingVisualizer4 = () => {
 
     // Draw nodes with appropriate colors
     const pathNodeIds = pathResult && !isTracingMode ? pathResult.paths.map(p => p.id) : [];
-
-    nodes.forEach(node => {
+    const nodeArray = Object.values(nodes);
+    nodeArray.forEach(node => {
       const point = new ol.geom.Point([node.Longitude, node.Latitude]);
       point.transform('EPSG:4326', 'EPSG:3857');
 
@@ -391,22 +398,22 @@ const PathfindingVisualizer4 = () => {
     let result;
     try {
       switch (algorithm) {
-        case "A*":
+        case "Astar":
           console.log("A*")
+          result = Astar(graph, nodes, edges, startNode, endNode, heuristic);
           break;
         case "UCS":
           // result = UCS(nodes, edges, startNode, endNode);
-          console.log
           result = UCS(graph, nodes, edges, startNode, endNode);
           break;
-        case "Greedy":
-          console.log("Greedy")
+          case "Greedy":
+          result = Greedy(graph, nodes, edges, startNode, endNode, heuristic);
           break;
         case "Hill Climbing":
           console.log("Hill Climbing")
           break;
         default:
-          console.log("Not found Algorithm")
+          console.log(algorithm, "Not found Algorithm")
       }
       if (result.totalDistance === Infinity) {
         throw new Error('Không tìm thấy đường đi giữa 2 node này');
@@ -436,7 +443,13 @@ const PathfindingVisualizer4 = () => {
     setCurrentTraceStep(0);
   };
 
-  const nodeOptions = nodes.map(n => n.Index.toString()).sort((a, b) => parseInt(a) - parseInt(b));
+  // console.log("edges", edges)
+  // console.log(nodes)
+  const nodeArray = Object.values(nodes);
+  const nodeOptions = nodeArray
+    .map(n => n.Index.toString())
+    .sort((a, b) => parseInt(a) - parseInt(b));
+  // const nodeOptions = nodes.map(n => n.Index.toString()).sort((a, b) => parseInt(a) - parseInt(b));
   const maxStep = pathResult?.traceExecution ? pathResult.traceExecution.length - 1 : 0;
 
   return (
@@ -527,10 +540,14 @@ const PathfindingVisualizer4 = () => {
                   </label>
                   <select
                     value={algorithm}
-                    onChange={(e) => dispatch(setAlgorithm(e.target.value))}
+                    onChange={(e) => {
+                      dispatch(setAlgorithm(e.target.value))
+                      dispatch(resetPathResult())
+                      
+                    }}
                     className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                   >
-                    <option value="A*">A*</option>
+                    <option value="Astar">A*</option>
                     <option value="UCS">UCS</option>
                     <option value="Greedy">Greedy</option>
                     <option value="Hill Climbing">Hill Climbing</option>
@@ -627,7 +644,7 @@ const PathfindingVisualizer4 = () => {
                 <div className="space-y-3">
                   <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
                     <p className="text-sm text-slate-600">Tổng Khoảng Cách</p>
-                    <p className="text-2xl font-bold text-blue-600">{pathResult.totalDistance.toFixed(2)}m</p>
+                    <p className="text-2xl font-bold text-blue-600">{pathResult.totalDistance && pathResult.totalDistance.toFixed(2)}m</p>
                   </div>
                   <div className="bg-slate-50 border border-slate-200 rounded-lg p-3">
                     <p className="text-sm text-slate-600">Thời Gian Thực Thi</p>
@@ -784,6 +801,7 @@ const PathfindingVisualizer4 = () => {
                 <MyTable 
                   traceExecution={pathResult.traceExecution} 
                   currentStep={currentTraceStep}
+                  algorithm={algorithm}
                 />
               </div>
             )}

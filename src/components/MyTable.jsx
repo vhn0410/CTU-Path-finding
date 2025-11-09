@@ -1,4 +1,4 @@
-export const MyTable = ({ traceExecution, currentStep }) => {
+export const MyTable = ({ traceExecution, currentStep, algorithm}) => {
   if (!traceExecution || traceExecution.length === 0) {
     return (
       <div className="text-center py-8 text-gray-500">
@@ -10,7 +10,37 @@ export const MyTable = ({ traceExecution, currentStep }) => {
   // Get all steps from 0 to currentStep
   const displayedSteps = traceExecution.slice(0, currentStep + 1);
   const currentData = traceExecution[currentStep];
-
+  const FormatNodeFunction = (algorithm_type, node) => {
+    console.log(algorithm_type, node )
+    switch (algorithm_type) {
+            case "Astar":
+              return (
+                <>
+                  {' '}({node.cost.toFixed(2)}, {node.heuristicx.toFixed(2)}, {node.fx.toFixed(2)}, {node.parent === -1 ? 'root' : `Node ${node.parent}`})
+                </>
+              )
+              break;
+            case "UCS":
+              return (
+                <>
+                  {' '}({node.cost.toFixed(2)}, {node.parent === -1 ? 'root' : `Node ${node.parent}`})
+                </>
+              )
+              break;
+              case "Greedy":
+              (
+                <>
+                  {' '}({node.cost.toFixed(2)}, {node.heuristicx.toFixed(2)}, {node.parent === -1 ? 'root' : `Node ${node.parent}`})
+                </>
+              )
+              break;
+            case "Hill Climbing":
+              console.log("Hill Climbing")
+              break;
+            default:
+              console.log(algorithm, "Not found Algorithm")
+    }
+  }
   const formatNodeList = (nodeList) => {
     if (!nodeList || nodeList.length === 0) return '_';
 
@@ -20,7 +50,13 @@ export const MyTable = ({ traceExecution, currentStep }) => {
         <span key={index} className="mr-1">
           <strong className="text-blue-600">Node {node.nodeId}</strong>
           <span className="text-gray-600">
-            {' '}({node.cost.toFixed(2)}, {node.parent === -1 ? 'root' : `Node ${node.parent}`})
+            
+
+          
+          {
+            FormatNodeFunction(algorithm, node)            
+           }
+            
           </span>
           {index < nodeList.length - 1 && <br></br>}
         </span>
@@ -37,7 +73,7 @@ export const MyTable = ({ traceExecution, currentStep }) => {
             <tr>
               <th className="border border-gray-300 px-4 py-3 text-left font-semibold">Step</th>
               <th className="border border-gray-300 px-4 py-3 text-left font-semibold">Visit Node (X)</th>
-              <th className="border border-gray-300 px-4 py-3 text-left font-semibold">Open List</th>
+              <th className="border border-gray-300 px-4 py-3 text-left font-semibold">Open List <br></br> {"Node (g(x), h(x), f(x), parent)"}</th>
               <th className="border border-gray-300 px-4 py-3 text-left font-semibold">Close List</th>
             </tr>
           </thead>

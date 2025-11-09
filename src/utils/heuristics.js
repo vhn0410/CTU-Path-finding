@@ -1,28 +1,40 @@
 /**
- * Calculate Euclidean distance between two nodes
- * Formula: √((x2 - x1)² + (y2 - y1)²)
+ * Calculate Euclidean distance (in meters)
+ * Formula: √((Δlon_m)² + (Δlat_m)²)
  * 
  * @param {Object} node1 - First node with Longitude and Latitude
  * @param {Object} node2 - Second node with Longitude and Latitude
- * @returns {number} Euclidean distance
+ * @returns {number} Euclidean distance in meters
  */
 export const euclideanDistance = (node1, node2) => {
-  const dx = node2.Longitude - node1.Longitude;
-  const dy = node2.Latitude - node1.Latitude;
+  const R = 6371000; // Earth radius (m)
+  const lat1 = node1.Latitude * Math.PI / 180;
+  const lat2 = node2.Latitude * Math.PI / 180;
+
+  // Convert degree difference to meters
+  const dx = (node2.Longitude - node1.Longitude) * (Math.PI / 180) * R * Math.cos((lat1 + lat2) / 2);
+  const dy = (node2.Latitude - node1.Latitude) * (Math.PI / 180) * R;
+
   return Math.sqrt(dx * dx + dy * dy);
 };
 
 /**
- * Calculate Manhattan distance between two nodes
- * Formula: |x2 - x1| + |y2 - y1|
+ * Calculate Manhattan distance (in meters)
+ * Formula: |Δlon_m| + |Δlat_m|
  * 
  * @param {Object} node1 - First node with Longitude and Latitude
  * @param {Object} node2 - Second node with Longitude and Latitude
- * @returns {number} Manhattan distance
+ * @returns {number} Manhattan distance in meters
  */
 export const manhattanDistance = (node1, node2) => {
-  const dx = Math.abs(node2.Longitude - node1.Longitude);
-  const dy = Math.abs(node2.Latitude - node1.Latitude);
+  const R = 6371000; // Earth radius (m)
+  const lat1 = node1.Latitude * Math.PI / 180;
+  const lat2 = node2.Latitude * Math.PI / 180;
+
+  // Convert degree difference to meters
+  const dx = Math.abs((node2.Longitude - node1.Longitude) * (Math.PI / 180) * R * Math.cos((lat1 + lat2) / 2));
+  const dy = Math.abs((node2.Latitude - node1.Latitude) * (Math.PI / 180) * R);
+
   return dx + dy;
 };
 

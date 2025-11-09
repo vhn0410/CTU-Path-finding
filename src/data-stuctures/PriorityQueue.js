@@ -67,6 +67,17 @@ export class PriorityQueue {
 
     return true;
   }
+  remove(value) {
+    const index = this.items.findIndex(
+      item => item.element.nodeId === value.nodeId
+    );
+    if (index === -1) return false; // not found
+
+    // Remove old item
+    this.items.splice(index, 1);
+
+    return true
+  }
 
 
 }

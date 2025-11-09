@@ -1,9 +1,8 @@
 import { PriorityQueue } from "../data-stuctures/PriorityQueue";
 import { getHeuristicFunction } from "../utils/heuristics";
 
-// Built-in UCS Algorithm
 
-export function Greedy(graph, nodes, edges, startNodeId, endNodeId, heuristicType) {
+export function Astar(graph, nodes, edges, startNodeId, endNodeId, heuristicType) {
     const heuristicFunction = getHeuristicFunction(heuristicType)
     const startTime = performance.now();
     
@@ -13,23 +12,22 @@ export function Greedy(graph, nodes, edges, startNodeId, endNodeId, heuristicTyp
 
     const visited = new Set()
     const distances = {};
-    const traceExecution = [];  // ✅ Đổi thành array thay vì object
+    const traceExecution = [];
 
     distances[parseInt(startNodeId)] = 0;
-
-    console.log("Greedy")
     
     const startNode = {
         nodeId: parseInt(startNodeId),
         parent: -1,
         cost: 0,
-        heuristicx: heuristicFunction(nodes[startNodeId], nodes[endNodeId])
+        heuristicx: heuristicFunction(nodes[startNodeId], nodes[endNodeId]),
+        fx: heuristicFunction(nodes[startNodeId], nodes[endNodeId])
     };
     
     open.enqueue(startNode, 0)
     let result = null
 
-    // ✅ Helper function để deep copy
+    // Helper function để deep copy
     const copyQueue = (queue) => {
         return queue.items.map(item => ({
             element: { ...item.element },
@@ -46,24 +44,23 @@ export function Greedy(graph, nodes, edges, startNodeId, endNodeId, heuristicTyp
     });
     
     let step = 1;
-    
+    // console.log("Successful execute A*")
+
     while(!open.isEmpty()) {
 
         const node = open.dequeue()
-        console.log("Visited: ", node)  
         
-        // Bỏ qua nếu node đã được duyệt
-        if(visited.has(node.nodeId)) continue;
-
+        // ✅ THAY ĐỔI: Không bỏ qua nếu node đã visited
+        // Vì có thể tìm được đường tốt hơn
+        
         // Đánh dấu đã duyệt
         visited.add(node.nodeId);
-        close.enqueue(node, node.heuristicx);
+        close.enqueue(node, node.fx);
         
         // Tìm thấy điểm đích
         if (node.nodeId === parseInt(endNodeId)) 
         {
             result = node;
-            // ✅ Trace bước cuối cùng
             traceExecution.push({
                 step: step,
                 visitNode: node.nodeId,
@@ -85,27 +82,42 @@ export function Greedy(graph, nodes, edges, startNodeId, endNodeId, heuristicTyp
                 nodeId: neighbor.node,
                 parent: node.nodeId,
                 cost: newCost,
-                heuristicx: heuristicFunction(nodes[neighbor.node], nodes[endNodeId])
+                heuristicx: heuristicFunction(nodes[neighbor.node], nodes[endNodeId]),
+                fx: newCost + heuristicFunction(nodes[neighbor.node], nodes[endNodeId])
             }
 
-            // Chỉ thêm nếu nút chưa duyệt
-            if (!visited.has(neighborNode.nodeId)) {
-                const openNode = open.exists(neighborNode);
-                
-                // So sánh < để tìm path ngắn hơn
-                if (openNode && neighborNode.heuristicx < openNode.priority) {
-                    open.update(openNode.element, {
-                        element: neighborNode,
-                        priority: neighborNode.heuristicx
-                    });
-                } else if (!openNode) {
-                    open.enqueue(neighborNode, neighborNode.heuristicx);
-                }
+            // ✅ THAY ĐỔI: Kiểm tra cả Open list
+            const openNode = open.exists(neighborNode);
+            
+            if (openNode && neighborNode.fx < openNode.priority) {
+                // Cập nhật node trong Open list
+                open.update(openNode.element, {
+                    element: neighborNode,
+                    priority: neighborNode.fx
+                });
                 distances[neighbor.node] = newCost;
+            } else if (!openNode) {
+                // ✅ THAY ĐỔI: Kiểm tra cả Close list
+                const closeNode = close.exists(neighborNode);
+                
+                if (closeNode && neighborNode.fx < closeNode.priority) {
+                    // Tìm được đường tốt hơn -> Reopen node
+                    // Xóa khỏi Close list
+                    close.remove(closeNode.element);
+                    visited.delete(neighborNode.nodeId);
+                    
+                    // Thêm vào Open list với cost mới
+                    open.enqueue(neighborNode, neighborNode.fx);
+                    distances[neighbor.node] = newCost;
+                } else if (!closeNode) {
+                    // Node chưa có trong cả Open và Close
+                    open.enqueue(neighborNode, neighborNode.fx);
+                    distances[neighbor.node] = newCost;
+                }
             }
         }
         
-        // ✅ Trace sau mỗi lần expand node
+        // Trace sau mỗi lần expand node
         traceExecution.push({
             step: step,
             visitNode: node.nodeId,
@@ -115,8 +127,9 @@ export function Greedy(graph, nodes, edges, startNodeId, endNodeId, heuristicTyp
         
         step += 1;
     }
-
+    
     // Reconstruct path
+
     const path = [];
     let totalDistance = 0;
     
@@ -127,7 +140,6 @@ export function Greedy(graph, nodes, edges, startNodeId, endNodeId, heuristicTyp
         
         // Trace back path
         while (current.nodeId !== parseInt(startNodeId)) {
-            // const node = nodes.find(n => n.Index === current.nodeId);
             const node = nodes[current.nodeId];
             if (node) {
                 path.unshift({
@@ -151,8 +163,7 @@ export function Greedy(graph, nodes, edges, startNodeId, endNodeId, heuristicTyp
             if (!found) break;
         }
         
-        // ✅ Thêm start node vào path
-        // const startNodeData = nodes.find(n => n.Index === parseInt(startNodeId));
+        // Thêm start node vào path
         const startNodeData = nodes[startNodeId];
         if (startNodeData) {
             path.unshift({
@@ -180,11 +191,10 @@ export function Greedy(graph, nodes, edges, startNodeId, endNodeId, heuristicTyp
             executeTime,
             traceExecution
             },
-            null, // replacer
-            2     // indentation for pretty print
+            null,
+            2
         )
     );
-
     return {
         totalDistance: totalDistance,
         paths: path,
