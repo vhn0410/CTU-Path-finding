@@ -1,4 +1,5 @@
-import { PriorityQueue } from "../data-stuctures/PriorityQueue";
+// import { PriorityQueue } from "../data-stuctures/PriorityQueue";
+import { PriorityQueue } from "../data-stuctures/MiniHeap";
 import { getHeuristicFunction } from "../utils/heuristics";
 import { reconstructPath } from "../utils/reconstruct_path";
 

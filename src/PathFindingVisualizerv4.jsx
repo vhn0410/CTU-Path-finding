@@ -19,6 +19,7 @@ import { UCS } from './algorithms/ucs';
 import { MyTable } from './components/MyTable';
 import { Greedy } from './algorithms/greedy';
 import { Astar } from './algorithms/Astar';
+import { HillClimbing } from './algorithms/hill_climbing';
 
 const PathfindingVisualizer4 = () => {
   const dispatch = useDispatch();
@@ -38,7 +39,7 @@ const PathfindingVisualizer4 = () => {
   const nodeFileRef = useRef(null);
   const edgeFileRef = useRef(null);
 
-  const [heuristic, setHeuristic] = useState('');
+  const [heuristic, setHeuristic] = useState('euclidean');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [mapLoaded, setMapLoaded] = useState(false);
@@ -128,7 +129,7 @@ const PathfindingVisualizer4 = () => {
       if (link.parentNode) link.parentNode.removeChild(link);
     };
   }, [nodes]);
-
+  // console.log(pathResult.traceExecution[pathResult.traceExecution.length - 1])
   useEffect(() => {
     if (!mapLoaded || !window.ol || mapInstanceRef.current) return;
 
@@ -403,14 +404,13 @@ const PathfindingVisualizer4 = () => {
           result = Astar(graph, nodes, edges, startNode, endNode, heuristic);
           break;
         case "UCS":
-          // result = UCS(nodes, edges, startNode, endNode);
           result = UCS(graph, nodes, edges, startNode, endNode);
           break;
           case "Greedy":
           result = Greedy(graph, nodes, edges, startNode, endNode, heuristic);
           break;
-        case "Hill Climbing":
-          console.log("Hill Climbing")
+          case "HillClimbing":
+          result = HillClimbing(graph, nodes, edges, startNode, endNode, heuristic);
           break;
         default:
           console.log(algorithm, "Not found Algorithm")
@@ -550,7 +550,7 @@ const PathfindingVisualizer4 = () => {
                     <option value="Astar">A*</option>
                     <option value="UCS">UCS</option>
                     <option value="Greedy">Greedy</option>
-                    <option value="Hill Climbing">Hill Climbing</option>
+                    <option value="HillClimbing">Hill Climbing</option>
                   </select>
                 </div>
 
@@ -599,6 +599,7 @@ const PathfindingVisualizer4 = () => {
                         {/* <option value="None">None</option> */}
                         <option value="euclidean">Euclidean</option>
                         <option value="manhattan">Manhattan</option>
+                        {/* <option value="haversine">Haversine</option> */}
                       </select>
                   </div>
                   ) : (<p></p>)
@@ -650,19 +651,32 @@ const PathfindingVisualizer4 = () => {
                     <p className="text-sm text-slate-600">Thời Gian Thực Thi</p>
                     <p className="text-lg font-semibold text-slate-700">{pathResult.executeTime}</p>
                   </div>
-                  <div className="bg-slate-50 border border-slate-200 rounded-lg p-3">
+                  {
+                    <div className="bg-slate-50 border border-slate-200 rounded-lg p-3">
                     <p className="text-sm text-slate-600 mb-2">Chuỗi Đường Đi</p>
                     <div className="flex flex-wrap gap-1">
-                      {pathResult.paths.slice().map((p, idx) => (
-                        <span
-                          key={idx}
-                          className="inline-flex items-center px-2 py-1 bg-blue-100 text-blue-700 text-xs font-medium rounded"
-                        >
-                          {p.id}
-                        </span>
-                      ))}
+                      {
+                        pathResult.traceExecution[pathResult.traceExecution.length - 1].stuck === true ? (
+                          <span
+                            className="inline-flex items-center px-2 py-1 bg-blue-100 text-red-700 text-xs font-medium rounded"
+                          >
+                            {pathResult.traceExecution[pathResult.traceExecution.length - 1].message}
+                          </span>
+                        ) : (
+                          pathResult.paths.slice().map((p, idx) => (
+                            <span
+                              key={idx}
+                              className="inline-flex items-center px-2 py-1 bg-blue-100 text-blue-700 text-xs font-medium rounded"
+                            >
+                              {p.id}
+                            </span>
+                          ))
+                        )
+                      }
                     </div>
+
                   </div>
+                  }
                   <div className="bg-green-50 border border-green-200 rounded-lg p-3">
                     <p className="text-sm text-slate-600">Thuật Toán Sử Dụng</p>
                     <p className="text-sm font-semibold text-green-700">{algorithm}</p>
@@ -736,16 +750,18 @@ const PathfindingVisualizer4 = () => {
               <div className="bg-white rounded-xl shadow-lg p-6">
                 <div className="flex items-center justify-between mb-4">
                   <h2 className="text-xl font-semibold text-slate-800">Trace Execution - {algorithm}</h2>
+                  {algorithm !== "HillClimbing" && 
                   <button
                     onClick={toggleTracingMode}
-                    className={`px-4 py-2 rounded-lg font-medium transition-colors ${
+                    className={`px-4 py-2 rounded-lg font-medium  ${
                       isTracingMode
                         ? 'bg-purple-600 hover:bg-purple-700 text-white'
                         : 'bg-slate-200 hover:bg-slate-300 text-slate-700'
                     }`}
                   >
-                    {isTracingMode ? '🎬 Tracing Mode ON' : '▶️ Enable Tracing'}
+                    <p className='text-slate-700'>{isTracingMode ? 'Tracing Mode ON' : 'Enable Tracing'}</p>
                   </button>
+                   }
                 </div>
 
                 {isTracingMode && (

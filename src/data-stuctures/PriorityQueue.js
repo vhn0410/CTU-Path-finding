@@ -78,8 +78,6 @@ export class PriorityQueue {
 
     return true
   }
-
-
 }
 
 // Example usage
