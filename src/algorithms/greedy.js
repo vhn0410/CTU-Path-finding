@@ -1,5 +1,6 @@
 import { PriorityQueue } from "../data-stuctures/PriorityQueue";
 import { getHeuristicFunction } from "../utils/heuristics";
+import { reconstructPath } from "../utils/reconstruct_path";
 
 // Built-in Greedy Algorithm
 
@@ -115,52 +116,13 @@ export function Greedy(graph, nodes, edges, startNodeId, endNodeId, heuristicTyp
     }
 
     // Reconstruct path
-    const path = [];
+    let path = [];
     let totalDistance = 0;
     
     if (result) {
         console.log("Find path ", result);
-        let current = result;
         totalDistance = result.cost;
-        
-        // Trace back path
-        while (current.nodeId !== parseInt(startNodeId)) {
-            // const node = nodes.find(n => n.Index === current.nodeId);
-            const node = nodes[current.nodeId];
-            if (node) {
-                path.unshift({
-                    id: current.nodeId.toString(),
-                    ordinal: 0,
-                    geometryX: node.Longitude,
-                    geometryY: node.Latitude,
-                    distanceFromStartNode: distances[current.nodeId],
-                    direction: "undefined"
-                });
-            }
-            // Find parent node in close
-            let found = false;
-            for (let i = 0; i < close.items.length; i++) {
-                if (close.items[i].element.nodeId === current.parent) {
-                    current = close.items[i].element;
-                    found = true;
-                    break;
-                }
-            }
-            if (!found) break;
-        }
-        
-        // add start node to path
-        const startNodeData = nodes[startNodeId];
-        if (startNodeData) {
-            path.unshift({
-                id: startNodeId.toString(),
-                ordinal: 0,
-                geometryX: startNodeData.Longitude,
-                geometryY: startNodeData.Latitude,
-                distanceFromStartNode: 0,
-                direction: "undefined"
-            });
-        }
+        path = reconstructPath(result, nodes, startNodeId, distances, close)
     } else {
         console.log("There is no path");
     } 

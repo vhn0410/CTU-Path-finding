@@ -653,7 +653,7 @@ const PathfindingVisualizer4 = () => {
                   <div className="bg-slate-50 border border-slate-200 rounded-lg p-3">
                     <p className="text-sm text-slate-600 mb-2">Chuỗi Đường Đi</p>
                     <div className="flex flex-wrap gap-1">
-                      {pathResult.paths.slice().reverse().map((p, idx) => (
+                      {pathResult.paths.slice().map((p, idx) => (
                         <span
                           key={idx}
                           className="inline-flex items-center px-2 py-1 bg-blue-100 text-blue-700 text-xs font-medium rounded"
