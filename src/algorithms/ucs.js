@@ -26,7 +26,7 @@ export function UCS(graph, nodes, edges, startNodeId, endNodeId) {
     open.enqueue(startNode, 0)
     let result = null
 
-    // ✅ Helper function để deep copy
+    // Helper function để deep copy
     const copyQueue = (queue) => {
         return queue.items.map(item => ({
             element: { ...item.element },
@@ -34,7 +34,7 @@ export function UCS(graph, nodes, edges, startNodeId, endNodeId) {
         }));
     };
 
-    // Trace bước khởi tạo
+    // Init trace 
     traceExecution.push({
         step: 0,
         visitNode: "",
@@ -47,20 +47,19 @@ export function UCS(graph, nodes, edges, startNodeId, endNodeId) {
     while(!open.isEmpty()) {
 
         const node = open.dequeue()
-        console.log("Visited: ", node)  
         
-        // Bỏ qua nếu node đã được duyệt
+        // continue if node is visited
         if(visited.has(node.nodeId)) continue;
-
-        // Đánh dấu đã duyệt
+        
+        // mark as visited
         visited.add(node.nodeId);
         close.enqueue(node, node.cost);
         
-        // Tìm thấy điểm đích
+        // Check Goal
         if (node.nodeId === parseInt(endNodeId)) 
         {
             result = node;
-            // ✅ Trace bước cuối cùng
+            // Trace bước cuối cùng
             traceExecution.push({
                 step: step,
                 visitNode: node.nodeId,
@@ -71,7 +70,7 @@ export function UCS(graph, nodes, edges, startNodeId, endNodeId) {
             break;
         }
 
-        // Duyệt các nút kề
+        // traversal all neighbors of visit node
         const neighbors = graph[node.nodeId] || [];
         for (let i = 0; i < neighbors.length; i++) {
 
@@ -84,11 +83,10 @@ export function UCS(graph, nodes, edges, startNodeId, endNodeId) {
                 cost: newCost
             }
 
-            // Chỉ thêm nếu nút chưa duyệt
             if (!visited.has(neighborNode.nodeId)) {
                 const openNode = open.exists(neighborNode);
                 
-                // So sánh < để tìm path ngắn hơn
+                // update node if there's a shorter path
                 if (openNode && newCost < openNode.priority) {
                     open.update(openNode.element, {
                         element: neighborNode,
@@ -101,7 +99,7 @@ export function UCS(graph, nodes, edges, startNodeId, endNodeId) {
             }
         }
         
-        // ✅ Trace sau mỗi lần expand node
+        // trace after expand the node
         traceExecution.push({
             step: step,
             visitNode: node.nodeId,
@@ -135,7 +133,6 @@ export function UCS(graph, nodes, edges, startNodeId, endNodeId) {
                     direction: "undefined"
                 });
             }
-            // Tìm parent node trong close
             let found = false;
             for (let i = 0; i < close.items.length; i++) {
                 if (close.items[i].element.nodeId === current.parent) {
@@ -147,8 +144,7 @@ export function UCS(graph, nodes, edges, startNodeId, endNodeId) {
             if (!found) break;
         }
         
-        // ✅ Thêm start node vào path
-        // const startNodeData = nodes.find(n => n.Index === parseInt(startNodeId));
+        // add start node to path
         const startNodeData = nodes[parseInt(startNodeId)]
         if (startNodeData) {
             path.unshift({

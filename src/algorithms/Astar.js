@@ -24,7 +24,7 @@ export function Astar(graph, nodes, edges, startNodeId, endNodeId, heuristicType
         fx: heuristicFunction(nodes[startNodeId], nodes[endNodeId])
     };
     
-    open.enqueue(startNode, 0)
+    open.enqueue(startNode, startNode.fx)
     let result = null
 
     // Helper function để deep copy
@@ -35,7 +35,7 @@ export function Astar(graph, nodes, edges, startNodeId, endNodeId, heuristicType
         }));
     };
 
-    // Trace bước khởi tạo
+    // Init trace 
     traceExecution.push({
         step: 0,
         visitNode: "",
@@ -44,20 +44,16 @@ export function Astar(graph, nodes, edges, startNodeId, endNodeId, heuristicType
     });
     
     let step = 1;
-    // console.log("Successful execute A*")
 
     while(!open.isEmpty()) {
 
         const node = open.dequeue()
         
-        // ✅ THAY ĐỔI: Không bỏ qua nếu node đã visited
-        // Vì có thể tìm được đường tốt hơn
-        
-        // Đánh dấu đã duyệt
+        // mark as visited
         visited.add(node.nodeId);
         close.enqueue(node, node.fx);
         
-        // Tìm thấy điểm đích
+        // Check Goal
         if (node.nodeId === parseInt(endNodeId)) 
         {
             result = node;
@@ -71,7 +67,7 @@ export function Astar(graph, nodes, edges, startNodeId, endNodeId, heuristicType
             break;
         }
 
-        // Duyệt các nút kề
+        // traversal all neighbors of visit node
         const neighbors = graph[node.nodeId] || [];
         for (let i = 0; i < neighbors.length; i++) {
 
@@ -86,38 +82,39 @@ export function Astar(graph, nodes, edges, startNodeId, endNodeId, heuristicType
                 fx: newCost + heuristicFunction(nodes[neighbor.node], nodes[endNodeId])
             }
 
-            // ✅ THAY ĐỔI: Kiểm tra cả Open list
+            // Check open list
+            // update node if there's a shorter path
             const openNode = open.exists(neighborNode);
-            
+
             if (openNode && neighborNode.fx < openNode.priority) {
-                // Cập nhật node trong Open list
                 open.update(openNode.element, {
                     element: neighborNode,
                     priority: neighborNode.fx
                 });
                 distances[neighbor.node] = newCost;
             } else if (!openNode) {
-                // ✅ THAY ĐỔI: Kiểm tra cả Close list
+                // Check close list
                 const closeNode = close.exists(neighborNode);
                 
                 if (closeNode && neighborNode.fx < closeNode.priority) {
-                    // Tìm được đường tốt hơn -> Reopen node
-                    // Xóa khỏi Close list
+                    // Found shorter path then Reopen node
+                    console.log("Tìm được đường tốt hơn -> Reopen node")
+                    // remove node from Close list
                     close.remove(closeNode.element);
                     visited.delete(neighborNode.nodeId);
                     
-                    // Thêm vào Open list với cost mới
+                    // add to Open list with new cost
                     open.enqueue(neighborNode, neighborNode.fx);
                     distances[neighbor.node] = newCost;
                 } else if (!closeNode) {
-                    // Node chưa có trong cả Open và Close
+                    // Add to Openlist if it not in Open & Close list
                     open.enqueue(neighborNode, neighborNode.fx);
                     distances[neighbor.node] = newCost;
                 }
             }
         }
         
-        // Trace sau mỗi lần expand node
+        // trace after expand the node
         traceExecution.push({
             step: step,
             visitNode: node.nodeId,
@@ -129,7 +126,6 @@ export function Astar(graph, nodes, edges, startNodeId, endNodeId, heuristicType
     }
     
     // Reconstruct path
-
     const path = [];
     let totalDistance = 0;
     
@@ -151,7 +147,7 @@ export function Astar(graph, nodes, edges, startNodeId, endNodeId, heuristicType
                     direction: "undefined"
                 });
             }
-            // Tìm parent node trong close
+            // finding parent node in close
             let found = false;
             for (let i = 0; i < close.items.length; i++) {
                 if (close.items[i].element.nodeId === current.parent) {
@@ -163,7 +159,7 @@ export function Astar(graph, nodes, edges, startNodeId, endNodeId, heuristicType
             if (!found) break;
         }
         
-        // Thêm start node vào path
+        // add start node to path
         const startNodeData = nodes[startNodeId];
         if (startNodeData) {
             path.unshift({
@@ -182,19 +178,19 @@ export function Astar(graph, nodes, edges, startNodeId, endNodeId, heuristicType
     const endTime = performance.now();
     const executeTime = `${(endTime - startTime).toFixed(2)} ms`;
     
-    console.log(
-        "Trace Execution:",
-        JSON.stringify(
-            {
-            totalDistance,
-            path,
-            executeTime,
-            traceExecution
-            },
-            null,
-            2
-        )
-    );
+    // console.log(
+    //     "Trace Execution:",
+    //     JSON.stringify(
+    //         {
+    //         totalDistance,
+    //         path,
+    //         executeTime,
+    //         traceExecution
+    //         },
+    //         null,
+    //         2
+    //     )
+    // );
     return {
         totalDistance: totalDistance,
         paths: path,

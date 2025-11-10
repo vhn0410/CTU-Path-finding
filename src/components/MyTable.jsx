@@ -11,7 +11,7 @@ export const MyTable = ({ traceExecution, currentStep, algorithm}) => {
   const displayedSteps = traceExecution.slice(0, currentStep + 1);
   const currentData = traceExecution[currentStep];
   const FormatNodeFunction = (algorithm_type, node) => {
-    console.log(algorithm_type, node )
+    // console.log(algorithm_type, node )
     switch (algorithm_type) {
             case "Astar":
               return (

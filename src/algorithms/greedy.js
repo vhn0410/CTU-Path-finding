@@ -1,7 +1,7 @@
 import { PriorityQueue } from "../data-stuctures/PriorityQueue";
 import { getHeuristicFunction } from "../utils/heuristics";
 
-// Built-in UCS Algorithm
+// Built-in Greedy Algorithm
 
 export function Greedy(graph, nodes, edges, startNodeId, endNodeId, heuristicType) {
     const heuristicFunction = getHeuristicFunction(heuristicType)
@@ -13,7 +13,7 @@ export function Greedy(graph, nodes, edges, startNodeId, endNodeId, heuristicTyp
 
     const visited = new Set()
     const distances = {};
-    const traceExecution = [];  // ✅ Đổi thành array thay vì object
+    const traceExecution = [];  
 
     distances[parseInt(startNodeId)] = 0;
 
@@ -29,7 +29,7 @@ export function Greedy(graph, nodes, edges, startNodeId, endNodeId, heuristicTyp
     open.enqueue(startNode, 0)
     let result = null
 
-    // ✅ Helper function để deep copy
+    // Helper function để deep copy
     const copyQueue = (queue) => {
         return queue.items.map(item => ({
             element: { ...item.element },
@@ -37,7 +37,7 @@ export function Greedy(graph, nodes, edges, startNodeId, endNodeId, heuristicTyp
         }));
     };
 
-    // Trace bước khởi tạo
+    // Init trace 
     traceExecution.push({
         step: 0,
         visitNode: "",
@@ -50,20 +50,19 @@ export function Greedy(graph, nodes, edges, startNodeId, endNodeId, heuristicTyp
     while(!open.isEmpty()) {
 
         const node = open.dequeue()
-        console.log("Visited: ", node)  
         
-        // Bỏ qua nếu node đã được duyệt
+        // continue if node is visited
         if(visited.has(node.nodeId)) continue;
 
-        // Đánh dấu đã duyệt
+        // mark as visited
         visited.add(node.nodeId);
         close.enqueue(node, node.heuristicx);
         
-        // Tìm thấy điểm đích
+        // Goal
         if (node.nodeId === parseInt(endNodeId)) 
         {
             result = node;
-            // ✅ Trace bước cuối cùng
+            // record tracing in last step
             traceExecution.push({
                 step: step,
                 visitNode: node.nodeId,
@@ -74,7 +73,7 @@ export function Greedy(graph, nodes, edges, startNodeId, endNodeId, heuristicTyp
             break;
         }
 
-        // Duyệt các nút kề
+        // traversal all neighbors of visit node
         const neighbors = graph[node.nodeId] || [];
         for (let i = 0; i < neighbors.length; i++) {
 
@@ -88,11 +87,10 @@ export function Greedy(graph, nodes, edges, startNodeId, endNodeId, heuristicTyp
                 heuristicx: heuristicFunction(nodes[neighbor.node], nodes[endNodeId])
             }
 
-            // Chỉ thêm nếu nút chưa duyệt
             if (!visited.has(neighborNode.nodeId)) {
                 const openNode = open.exists(neighborNode);
                 
-                // So sánh < để tìm path ngắn hơn
+                // update node if there's a shorter path
                 if (openNode && neighborNode.heuristicx < openNode.priority) {
                     open.update(openNode.element, {
                         element: neighborNode,
@@ -105,7 +103,7 @@ export function Greedy(graph, nodes, edges, startNodeId, endNodeId, heuristicTyp
             }
         }
         
-        // ✅ Trace sau mỗi lần expand node
+        // trace after expand the node
         traceExecution.push({
             step: step,
             visitNode: node.nodeId,
@@ -139,7 +137,7 @@ export function Greedy(graph, nodes, edges, startNodeId, endNodeId, heuristicTyp
                     direction: "undefined"
                 });
             }
-            // Tìm parent node trong close
+            // Find parent node in close
             let found = false;
             for (let i = 0; i < close.items.length; i++) {
                 if (close.items[i].element.nodeId === current.parent) {
@@ -151,8 +149,7 @@ export function Greedy(graph, nodes, edges, startNodeId, endNodeId, heuristicTyp
             if (!found) break;
         }
         
-        // ✅ Thêm start node vào path
-        // const startNodeData = nodes.find(n => n.Index === parseInt(startNodeId));
+        // add start node to path
         const startNodeData = nodes[startNodeId];
         if (startNodeData) {
             path.unshift({
