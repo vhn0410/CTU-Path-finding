@@ -9,5 +9,5 @@ export default defineConfig({
         
 
   ],
-  base: '/CTU-Path-finding/', 
+  base: '/CTU-Pathfinding/', 
 })
