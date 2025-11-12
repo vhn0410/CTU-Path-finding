@@ -143,7 +143,7 @@ export function Greedy(graph, nodes, edges, startNodeId, endNodeId, heuristicTyp
             2     // indentation for pretty print
         )
     );
-
+    // console.log(traceExecution)
     return {
         totalDistance: totalDistance,
         paths: path,

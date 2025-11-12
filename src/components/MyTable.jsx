@@ -6,12 +6,12 @@ export const MyTable = ({ traceExecution, currentStep, algorithm }) => {
       </div>
     );
   }
-
+  console.log("Rendering MyTable with algorithm:", algorithm);
   // Get all steps from 0 to currentStep
   const displayedSteps = traceExecution.slice(0, currentStep + 1);
   const currentData = traceExecution[currentStep];
   const FormatNodeFunction = (algorithm_type, node) => {
-    // console.log(algorithm_type, node )
+    console.log(algorithm_type, node )
     switch (algorithm_type) {
       case "Astar":
         return (
@@ -27,8 +27,7 @@ export const MyTable = ({ traceExecution, currentStep, algorithm }) => {
           </>
         )
         break;
-      case "Greedy":
-        (
+      case "Greedy": return (
           <>
             {' '}({node.cost.toFixed(2)}, {node.heuristicx.toFixed(2)}, {node.parent === -1 ? 'root' : `Node ${node.parent}`})
           </>
@@ -50,9 +49,6 @@ export const MyTable = ({ traceExecution, currentStep, algorithm }) => {
         <span key={index} className="mr-1">
           <strong className="text-blue-600">Node {node.nodeId}</strong>
           <span className="text-gray-600">
-
-
-
             {
               FormatNodeFunction(algorithm, node)
             }

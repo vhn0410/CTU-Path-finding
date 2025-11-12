@@ -379,14 +379,7 @@ const buildNodesList = (nodes) => {
 
     return nodesList;
 }
-// const buildEdgesList = (edges) => {
-//     const edgeList = {};
-//     edges.forEach(edge => {
-//         edgeList[edge.Index] = edge;
-//     });
 
-//     return edgeList;
-// }
 const graphSlice = createSlice({
     name: 'graph',
     initialState: {
